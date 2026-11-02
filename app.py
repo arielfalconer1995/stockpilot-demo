@@ -39,38 +39,49 @@ st.markdown(
 )
 
 
+def clave_datos_sesion(ruta):
+    """Devuelve una clave aislada para los datos de esta sesión de demo."""
+    return f"_stockpilot_demo_{ruta.name}"
+
+
 def cargar_json(ruta, tipo_esperado, valor_inicial):
-    """Lee un archivo JSON y comprueba el tipo de dato esperado."""
-    if not ruta.exists():
-        return valor_inicial
-
-    try:
-        with ruta.open("r", encoding="utf-8") as archivo:
-            contenido = archivo.read().strip()
-            if not contenido:
-                return valor_inicial
-            datos = json.loads(contenido)
-
+    """Carga datos ficticios una vez y conserva cambios solo en esta sesión."""
+    clave = clave_datos_sesion(ruta)
+    if clave in st.session_state:
+        datos = st.session_state[clave]
         if not isinstance(datos, tipo_esperado):
-            st.error(f"El archivo {ruta.name} tiene un formato incorrecto.")
+            st.error(f"Los datos de demostración de {ruta.name} tienen un formato incorrecto.")
             return None
-
         return datos
 
-    except (json.JSONDecodeError, OSError) as error:
-        st.error(f"No se pudo leer {ruta.name}: {error}")
-        return None
+    if not ruta.exists():
+        datos = valor_inicial
+    else:
+        try:
+            with ruta.open("r", encoding="utf-8") as archivo:
+                contenido = archivo.read().strip()
+                datos = json.loads(contenido) if contenido else valor_inicial
+
+            if not isinstance(datos, tipo_esperado):
+                st.error(f"El archivo {ruta.name} tiene un formato incorrecto.")
+                return None
+
+        except (json.JSONDecodeError, OSError) as error:
+            st.error(f"No se pudo leer {ruta.name}: {error}")
+            return None
+
+    st.session_state[clave] = datos
+    return datos
 
 
 def guardar_json(ruta, datos):
-    """Guarda datos en un archivo JSON."""
+    """Guarda cambios solo en la sesión actual; nunca modifica los archivos demo."""
     try:
-        with ruta.open("w", encoding="utf-8") as archivo:
-            json.dump(datos, archivo, indent=4, ensure_ascii=False)
+        st.session_state[clave_datos_sesion(ruta)] = datos
         return True
 
-    except (OSError, TypeError, ValueError) as error:
-        st.error(f"No se pudieron guardar los datos en {ruta.name}: {error}")
+    except (TypeError, ValueError) as error:
+        st.error(f"No se pudieron actualizar los datos temporales de {ruta.name}: {error}")
         return False
 
 
@@ -235,7 +246,8 @@ with st.sidebar.expander("📊 Informes", expanded=opcion == "Historial de movim
     boton_navegacion("Historial de movimientos", "Historial de movimientos", "🕘", st)
 
 st.sidebar.divider()
-st.sidebar.caption("StockPilot · Versión local")
+st.sidebar.caption("StockPilot · Demo interactiva")
+st.sidebar.caption("Los cambios son temporales y solo afectan a tu sesión. No cargues datos reales.")
 
 if opcion == "Inicio":
     st.title("📦 StockPilot")

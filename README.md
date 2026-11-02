@@ -10,7 +10,7 @@ StockPilot is a Spanish-language portfolio prototype for small-business inventor
 - Inventory movement history
 - Operational summaries and CSV exports
 
-The included JSON files contain fictional sample records for demonstration.
+The included JSON files contain fictional sample records for demonstration. In the hosted portfolio demo, edits are kept only in the current visitor's Streamlit session; the sample files are never overwritten and changes are not shared between visitors.
 
 ## Run locally
 
@@ -25,4 +25,4 @@ python -m streamlit run app.py
 
 ## Project status and limitations
 
-This is a local prototype. It stores data in JSON files and does not include user accounts, role-based access, a hosted database, backups, or multi-user controls. Do not use it with confidential or real customer data. A production deployment would need a separately scoped security, persistence, and hosting design.
+This is a portfolio prototype. It does not include user accounts, role-based access, a hosted database, backups, or production multi-user controls. The hosted demo keeps visitor edits only in session memory and starts from the fictional sample data; do not enter confidential or real customer information. A production deployment would need a separately scoped security, persistence, and hosting design.
